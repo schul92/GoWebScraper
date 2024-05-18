@@ -15,8 +15,6 @@ type extractedJob struct {
 	id       string
 	title    string
 	location string
-	salary   string
-	summary  string
 }
 
 func main() {
@@ -28,7 +26,8 @@ func main() {
 	}
 }
 
-func getPage(page int) {
+func getPage(page int) []extractedJob {
+	var jobs []extractedJob
 	pageUrl := baseURL + "&recruitPage=" + strconv.Itoa(page)
 	fmt.Println("Requesting ", pageUrl)
 	res, err := http.Get(pageUrl)
@@ -43,18 +42,26 @@ func getPage(page int) {
 	searchCards := doc.Find(".item_recruit")
 
 	searchCards.Each(func(i int, card *goquery.Selection) {
-		extractJob(card)
+		job := extractJob(card)
+		jobs = append(jobs, job)
 	})
 
+	return jobs
 }
 
-func extractJob(card *goquery.Selection) {
+func extractJob(card *goquery.Selection) extractedJob {
 	id, _ := card.Attr("value")
 	fmt.Println(id)
 	title := card.Find(".job_tit>a").Text()
 	fmt.Println(title)
 	location := card.Find(".job_condition> span").First().Text()
 	fmt.Println(location)
+
+	return extractedJob{
+		id:       id,
+		title:    title,
+		location: location,
+	}
 }
 
 func getPages() int {
